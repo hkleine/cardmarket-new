@@ -63,7 +63,7 @@ export async function TopNavigation() {
           </nav>
         </div>
         <div className="hidden md:flex items-center gap-4">
-          {user && (
+          {user.user && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center gap-1">

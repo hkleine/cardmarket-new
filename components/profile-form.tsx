@@ -60,6 +60,7 @@ export function ProfileForm() {
 
   const handleVendorToggle = async () => {
     const { links } = await createPartnerReferral();
+    console.log(links);
     router.push(links[1].href);
   };
 
@@ -138,7 +139,7 @@ export function ProfileForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-[800px]">
+    <form className="w-[800px]">
       <Card>
         <Tabs defaultValue="personal">
           <CardHeader>
