@@ -87,7 +87,7 @@ export async function TopNavigation() {
           <Button variant="outline" size="icon">
             <ShoppingCart className="h-5 w-5" />
           </Button>
-          {!user && (
+          {!user.user && (
             <Button asChild>
               <Link href="/sign-in">Sign In</Link>
             </Button>

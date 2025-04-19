@@ -15,7 +15,7 @@ export const POST = async (req: Request) => {
   try {
     const payload = await req.json(); // Parse JSON payload from PayPal
     const { event_type, resource } = payload; // Extract event type and resource from payload
-    console.log(payload);
+
     switch (event_type) {
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_COMPLETED:
         const userId = resource.tracking_id;

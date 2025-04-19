@@ -163,16 +163,12 @@ export async function getAccessToken(): Promise<string> {
 }
 
 export async function createPartnerReferral() {
-  console.log("creating referal");
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) {
     return null;
   }
-  console.log("user", userData);
-
   const accessToken = await getAccessToken();
-  console.log("accessToken", accessToken);
 
   const response = await fetch(
     "https://api-m.sandbox.paypal.com/v2/customer/partner-referrals",
@@ -220,6 +216,6 @@ export async function createPartnerReferral() {
   }
 
   const data = await response.json();
-  console.log("Partner Referral Response:", data);
+
   return data;
 }

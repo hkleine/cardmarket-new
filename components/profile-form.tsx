@@ -60,8 +60,8 @@ export function ProfileForm() {
 
   const handleVendorToggle = async () => {
     const { links } = await createPartnerReferral();
-    console.log(links);
-    router.push(links[1].href);
+    console.log(links[1].href);
+    // router.push(links[1].href);
   };
 
   const validateForm = () => {
