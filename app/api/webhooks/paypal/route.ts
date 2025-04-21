@@ -25,6 +25,7 @@ export const POST = async (req: Request) => {
 
     switch (event_type) {
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_COMPLETED:
+        console.log("completet");
         const { error } = await supabase
           .from("profiles")
           .update({
