@@ -13,14 +13,18 @@ export const POST = async (req: Request) => {
   const supabase = await createClient();
 
   try {
-    const payload = await req.json(); // Parse JSON payload from PayPal
-    const { event_type, resource } = payload; // Extract event type and resource from payload
+    console.log("webhook");
+
+    const payload = await req.json();
+    const { event_type, resource } = payload;
+    console.log(event_type, resource);
+
+    const userId = resource?.tracking_id;
+    const merchantId = resource?.merchant_id;
+    console.log(userId, merchantId);
 
     switch (event_type) {
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_COMPLETED:
-        const userId = resource.tracking_id;
-        const merchantId = resource.merchant_id;
-
         const { error } = await supabase
           .from("profiles")
           .update({
@@ -29,11 +33,9 @@ export const POST = async (req: Request) => {
           })
           .eq("id", userId);
 
-        if (error) {
-          throw error;
-        }
-
+        if (error) throw error;
         break;
+
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_REVOKED:
         const { error: revokeError } = await supabase
           .from("profiles")
@@ -43,10 +45,9 @@ export const POST = async (req: Request) => {
           })
           .eq("id", userId);
 
-        if (revokeError) {
-          throw revokeError;
-        }
+        if (revokeError) throw revokeError;
         break;
+
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_APPLICATION_DENIED:
         const { error: deniedError } = await supabase
           .from("profiles")
@@ -55,10 +56,9 @@ export const POST = async (req: Request) => {
           })
           .eq("id", userId);
 
-        if (deniedError) {
-          throw deniedError;
-        }
+        if (deniedError) throw deniedError;
         break;
+
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_SELLER_STARTED:
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_STARTED:
         const { error: startedError } = await supabase
@@ -66,10 +66,9 @@ export const POST = async (req: Request) => {
           .update({ paypal_onboarding_state: "Started" })
           .eq("id", userId);
 
-        if (startedError) {
-          throw startedError;
-        }
+        if (startedError) throw startedError;
         break;
+
       default:
         console.log(`Unhandled event type: ${event_type}`);
         break;
