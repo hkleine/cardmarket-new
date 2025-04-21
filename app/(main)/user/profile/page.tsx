@@ -1,5 +1,8 @@
+import { createPartnerReferral } from "@/app/serverQueries";
 import { ProfileForm } from "@/components/profile-form";
 
 export default async function ProfilePage() {
-  return <ProfileForm />;
+  const { links } = await createPartnerReferral();
+
+  return <ProfileForm referralLink={links[1].href} />;
 }
