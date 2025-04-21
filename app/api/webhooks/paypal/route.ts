@@ -26,14 +26,14 @@ export const POST = async (req: Request) => {
     switch (event_type) {
       case ON_BOARDING_EVENTS.MERCHANT_ONBOARDING_COMPLETED:
         console.log("completet");
-        const { error } = await supabase
+        const { error, data } = await supabase
           .from("profiles")
           .update({
             paypal_merchant_id: merchantId,
             paypal_onboarding_state: "Completed",
           })
           .eq("user_id", userId);
-
+        console.log(error, data);
         if (error) throw error;
         break;
 
