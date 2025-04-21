@@ -31,7 +31,7 @@ export const POST = async (req: Request) => {
             paypal_merchant_id: merchantId,
             paypal_onboarding_state: "Completed",
           })
-          .eq("id", userId);
+          .eq("user_id", userId);
 
         if (error) throw error;
         break;
@@ -43,7 +43,7 @@ export const POST = async (req: Request) => {
             paypal_merchant_id: null,
             paypal_onboarding_state: "Revoked",
           })
-          .eq("id", userId);
+          .eq("user_id", userId);
 
         if (revokeError) throw revokeError;
         break;
@@ -54,7 +54,7 @@ export const POST = async (req: Request) => {
           .update({
             paypal_onboarding_state: "Failed",
           })
-          .eq("id", userId);
+          .eq("user_id", userId);
 
         if (deniedError) throw deniedError;
         break;
@@ -64,7 +64,7 @@ export const POST = async (req: Request) => {
         const { error: startedError } = await supabase
           .from("profiles")
           .update({ paypal_onboarding_state: "Started" })
-          .eq("id", userId);
+          .eq("user_id", userId);
 
         if (startedError) throw startedError;
         break;
