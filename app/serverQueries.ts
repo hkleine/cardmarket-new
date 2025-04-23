@@ -1,5 +1,5 @@
-import { defaultUrl } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
+import Stripe from "stripe";
 
 export async function findProducts(query: string) {
   const supabase = await createClient();
@@ -35,129 +35,37 @@ export async function findProduct(id: string) {
   return data;
 }
 
-export async function getAccessToken(): Promise<string> {
-  const credentials = btoa(
-    `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_SECRET}`
-  );
+export async function createStripeOnboardingLink() {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
+    apiVersion: "2025-03-31.basil", // Optional, set the API version you're using
+  });
 
-  const response = await fetch(
-    "https://api-m.sandbox.paypal.com/v1/oauth2/token",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+  // 1. Create Express account
+  const account = await stripe.accounts.create({
+    country: "DE",
+    type: "express",
+    capabilities: {
+      card_payments: {
+        requested: true,
       },
-      body: new URLSearchParams({
-        grant_type: "client_credentials",
-      }),
-      cache: "no-store",
-    }
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Error ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  console.log("Access Token:", data.access_token);
-  return data.access_token;
-}
-
-export async function createPartnerReferral() {
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  if (!userData.user) {
-    return null;
-  }
-  const accessToken = await getAccessToken();
-
-  const response = await fetch(
-    "https://api-m.sandbox.paypal.com/v2/customer/partner-referrals",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`, // Make sure this is valid
+      transfers: {
+        requested: true,
       },
-      body: JSON.stringify({
-        tracking_id: userData.user.id, // Replace with your actual tracking ID
-        partner_config_override: {
-          return_url: `${defaultUrl}/onboarding`,
-          return_url_description:
-            "the url to return the merchant after the paypal onboarding process.",
-        },
-        operations: [
-          {
-            operation: "API_INTEGRATION",
-            api_integration_preference: {
-              rest_api_integration: {
-                integration_method: "PAYPAL",
-                integration_type: "THIRD_PARTY",
-                third_party_details: {
-                  features: ["PAYMENT", "REFUND"],
-                },
-              },
-            },
-          },
-        ],
-        products: ["EXPRESS_CHECKOUT"],
-        legal_consents: [
-          {
-            type: "SHARE_DATA_CONSENT",
-            granted: true,
-          },
-        ],
-      }),
-    }
-  );
+    },
+    business_type: "individual",
+    business_profile: {
+      mcc: "5691",
+      url: "https://someurl.de",
+      product_description: "https://example.com",
+    },
+  });
+  // 2. Generate onboarding link
+  const accountLink = await stripe.accountLinks.create({
+    account: account.id,
+    refresh_url: "http://localhost:3000",
+    return_url: "http://localhost:3000/onboarding",
+    type: "account_onboarding",
+  });
 
-  // const response = await fetch(
-  //   "https://api-m.sandbox.paypal.com/v2/customer/partner-referrals",
-  //   {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${accessToken}`,
-  //     },
-  //     body: JSON.stringify({
-  //       tracking_id: userData.user.id,
-  //       partner_config_override: {
-  //         return_url: `${defaultUrl}/onboarding`,
-  //         return_url_description:
-  //           "the url to return the merchant after the paypal onboarding process.",
-  //       },
-  //       operations: [
-  //         {
-  //           operation: "API_INTEGRATION",
-  //           api_integration_preference: {
-  //             rest_api_integration: {
-  //               integration_method: "PAYPAL",
-  //               integration_type: "THIRD_PARTY",
-  //               third_party_details: {
-  //                 features: ["PAYMENT", "REFUND"],
-  //               },
-  //             },
-  //           },
-  //         },
-  //       ],
-  //       products: ["EXPRESS_CHECKOUT"],
-  //       legal_consents: [
-  //         {
-  //           type: "SHARE_DATA_CONSENT",
-  //           granted: true,
-  //         },
-  //       ],
-  //     }),
-  //   }
-  // );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Error ${response.status}: ${errorText}`);
-  }
-
-  const data = await response.json();
-  return data;
+  return accountLink;
 }
