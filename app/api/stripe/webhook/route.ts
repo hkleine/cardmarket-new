@@ -33,11 +33,14 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+  console.log("moin", event);
 
   // Process the event
   switch (event.type) {
+    case "account.external_account.created": {
+      return;
+    }
     case "account.updated": {
-      console.log("moin", event);
       const account = event.data.object;
 
       if (account.charges_enabled && account.payouts_enabled) {
@@ -47,16 +50,22 @@ export async function POST(req: Request) {
         } = await supabase.auth.getUser();
 
         if (!user) {
-          return;
+          return NextResponse.json(
+            { error: "No user authenticated." },
+            { status: 401 }
+          );
         }
 
-        const { error, data } = await supabase
+        const { error } = await supabase
           .from("profiles")
           .update({ stripe_id: event.account, is_vendor: true })
           .eq("user_id", user.id);
 
         if (error) {
-          return; // error response
+          return NextResponse.json(
+            { error: `Webhook Error: ${error.message}` },
+            { status: 500 }
+          );
         }
       }
     }
