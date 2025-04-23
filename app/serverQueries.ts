@@ -48,7 +48,10 @@ export async function getAccessToken(): Promise<string> {
         Authorization: `Basic ${credentials}`,
         "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: "grant_type=client_credentials",
+      body: new URLSearchParams({
+        grant_type: "client_credentials",
+      }),
+      cache: "no-store",
     }
   );
 
@@ -76,10 +79,10 @@ export async function createPartnerReferral() {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${accessToken}`, // Make sure this is valid
       },
       body: JSON.stringify({
-        tracking_id: userData.user.id,
+        tracking_id: userData.user.id, // Replace with your actual tracking ID
         partner_config_override: {
           return_url: `${defaultUrl}/onboarding`,
           return_url_description:
@@ -109,6 +112,46 @@ export async function createPartnerReferral() {
       }),
     }
   );
+
+  // const response = await fetch(
+  //   "https://api-m.sandbox.paypal.com/v2/customer/partner-referrals",
+  //   {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //       Authorization: `Bearer ${accessToken}`,
+  //     },
+  //     body: JSON.stringify({
+  //       tracking_id: userData.user.id,
+  //       partner_config_override: {
+  //         return_url: `${defaultUrl}/onboarding`,
+  //         return_url_description:
+  //           "the url to return the merchant after the paypal onboarding process.",
+  //       },
+  //       operations: [
+  //         {
+  //           operation: "API_INTEGRATION",
+  //           api_integration_preference: {
+  //             rest_api_integration: {
+  //               integration_method: "PAYPAL",
+  //               integration_type: "THIRD_PARTY",
+  //               third_party_details: {
+  //                 features: ["PAYMENT", "REFUND"],
+  //               },
+  //             },
+  //           },
+  //         },
+  //       ],
+  //       products: ["EXPRESS_CHECKOUT"],
+  //       legal_consents: [
+  //         {
+  //           type: "SHARE_DATA_CONSENT",
+  //           granted: true,
+  //         },
+  //       ],
+  //     }),
+  //   }
+  // );
 
   if (!response.ok) {
     const errorText = await response.text();
