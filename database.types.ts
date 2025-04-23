@@ -111,11 +111,10 @@ export type Database = {
           country: string | null
           created_at: string | null
           is_vendor: boolean | null
-          paypal_merchant_id: string | null
-          paypal_onboarding_state: string | null
           postal_code: string | null
           street: string | null
           street_number: string | null
+          stripe_id: string | null
           updated_at: string | null
           user_id: string
         }
@@ -124,11 +123,10 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           is_vendor?: boolean | null
-          paypal_merchant_id?: string | null
-          paypal_onboarding_state?: string | null
           postal_code?: string | null
           street?: string | null
           street_number?: string | null
+          stripe_id?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -137,11 +135,10 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           is_vendor?: boolean | null
-          paypal_merchant_id?: string | null
-          paypal_onboarding_state?: string | null
           postal_code?: string | null
           street?: string | null
           street_number?: string | null
+          stripe_id?: string | null
           updated_at?: string | null
           user_id?: string
         }

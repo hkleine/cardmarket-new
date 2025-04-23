@@ -1,3 +1,4 @@
+import { createClient } from "@/utils/supabase/server";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -37,6 +38,27 @@ export async function POST(req: Request) {
   switch (event.type) {
     case "account.updated": {
       console.log("moin", event);
+      const account = event.data.object;
+
+      if (account.charges_enabled && account.payouts_enabled) {
+        const supabase = await createClient();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          return;
+        }
+
+        const { error, data } = await supabase
+          .from("profiles")
+          .update({ stripe_id: event.account, is_vendor: true })
+          .eq("user_id", user.id);
+
+        if (error) {
+          return; // error response
+        }
+      }
     }
     case "payment_intent.succeeded": {
       const paymentIntent = event.data.object as Stripe.PaymentIntent;
