@@ -38,7 +38,7 @@ export async function POST(req: Request) {
   // Process the event
   switch (event.type) {
     case "account.external_account.created": {
-      return;
+      return NextResponse.json({ status: 200 });
     }
     case "account.updated": {
       const account = event.data.object;
@@ -46,8 +46,11 @@ export async function POST(req: Request) {
       if (account.charges_enabled && account.payouts_enabled) {
         const supabase = await createClient();
         const {
+          error: authError,
           data: { user },
         } = await supabase.auth.getUser();
+
+        console.log(authError, user);
 
         if (!user) {
           return NextResponse.json(

@@ -1,3 +1,4 @@
+import { defaultUrl } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/server";
 import Stripe from "stripe";
 
@@ -62,8 +63,8 @@ export async function createStripeOnboardingLink() {
   // 2. Generate onboarding link
   const accountLink = await stripe.accountLinks.create({
     account: account.id,
-    refresh_url: "http://localhost:3000",
-    return_url: "http://localhost:3000/onboarding",
+    refresh_url: defaultUrl,
+    return_url: `${defaultUrl}/onboarding`,
     type: "account_onboarding",
   });
 
