@@ -37,6 +37,16 @@ export async function findProduct(id: string) {
 }
 
 export async function createStripeOnboardingLink() {
+  const supabase = await createClient();
+  const {
+    error: authError,
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || authError) {
+    return null;
+  }
+
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY ?? "", {
     apiVersion: "2025-03-31.basil", // Optional, set the API version you're using
   });
@@ -58,6 +68,9 @@ export async function createStripeOnboardingLink() {
       mcc: "5691",
       url: "https://someurl.de",
       product_description: "https://example.com",
+    },
+    metadata: {
+      supabase_user_id: user.id,
     },
   });
   // 2. Generate onboarding link

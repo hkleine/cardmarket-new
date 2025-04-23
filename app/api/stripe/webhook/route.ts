@@ -17,6 +17,7 @@ export const config = {
 export async function POST(req: Request) {
   const sig = (await headers()).get("stripe-signature")!;
   const rawBody = await req.text(); // raw body as string, NOT parsed!
+  const supabase = await createClient();
 
   let event: Stripe.Event;
 
@@ -42,17 +43,10 @@ export async function POST(req: Request) {
     }
     case "account.updated": {
       const account = event.data.object;
-
+      const userId = account.metadata?.supabase_user_id;
+      console.log(userId);
       if (account.charges_enabled && account.payouts_enabled) {
-        const supabase = await createClient();
-        const {
-          error: authError,
-          data: { user },
-        } = await supabase.auth.getUser();
-
-        console.log(authError, user);
-
-        if (!user) {
+        if (!userId) {
           return NextResponse.json(
             { error: "No user authenticated." },
             { status: 401 }
@@ -62,7 +56,7 @@ export async function POST(req: Request) {
         const { error } = await supabase
           .from("profiles")
           .update({ stripe_id: event.account, is_vendor: true })
-          .eq("user_id", user.id);
+          .eq("user_id", userId);
 
         if (error) {
           return NextResponse.json(
